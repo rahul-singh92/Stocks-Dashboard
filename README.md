@@ -81,6 +81,23 @@ Coordinating multiple API calls for prices, statistics, and predictions while ma
 - Interactive stock charts with Chart.js
 - Clean, professional interface
 
+## 🤖 Prediction Methodology
+
+### **Technical Implementation**
+- **Linear Regression Models** with adaptive window sizing (15-30 days)
+- **Fallback Mechanisms** using Simple Moving Averages
+- **Error Handling** for data quality and API reliability
+- **Real-time Processing** of financial data streams
+
+### **Model Features**
+- **Multiple Algorithm Support** with automatic selection
+- **Data Validation** and outlier detection
+- **Robust API Design** with comprehensive error handling
+- **Scalable Architecture** supporting additional prediction models
+
+**Note:** This project demonstrates full-stack development skills and financial data processing. Stock market predictions are inherently uncertain and should not be used for actual trading decisions.
+
+
 ## 🛠️ Technologies Used
 
 ### **Frontend**
