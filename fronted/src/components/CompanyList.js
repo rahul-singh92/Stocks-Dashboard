@@ -1,18 +1,8 @@
 import React from "react";
 
 export default function CompanyList({ companies, selected, onSelect }) {
-    // DEBUG: Enhanced logging
-    console.log('📋 CompanyList rendered with:', {
-        companiesType: typeof companies,
-        companiesLength: companies?.length || 0,
-        isArray: Array.isArray(companies),
-        selectedSymbol: selected?.symbol || 'none',
-        companies: companies
-    });
-
     // Enhanced safety checks
     if (!companies) {
-        console.log('⚠️ Companies is null/undefined');
         return (
             <div style={{
                 color: '#fbbf24',
@@ -29,7 +19,6 @@ export default function CompanyList({ companies, selected, onSelect }) {
     }
 
     if (!Array.isArray(companies)) {
-        console.log('❌ Companies is not an array, type:', typeof companies);
         return (
             <div style={{
                 color: '#ef4444',
@@ -50,7 +39,6 @@ export default function CompanyList({ companies, selected, onSelect }) {
     }
 
     if (companies.length === 0) {
-        console.log('📭 Companies array is empty');
         return (
             <div style={{
                 color: '#64748b',
@@ -72,18 +60,13 @@ export default function CompanyList({ companies, selected, onSelect }) {
 
     // Validate company objects
     const validCompanies = companies.filter(company => {
-        const isValid = company &&
+        return company &&
             typeof company === 'object' &&
             company.symbol &&
             company.name;
-        if (!isValid) {
-            console.warn('⚠️ Invalid company object:', company);
-        }
-        return isValid;
     });
 
     if (validCompanies.length === 0) {
-        console.log('❌ No valid company objects found');
         return (
             <div style={{
                 color: '#ef4444',
@@ -103,16 +86,11 @@ export default function CompanyList({ companies, selected, onSelect }) {
         );
     }
 
-    console.log(`✅ Rendering ${validCompanies.length} valid companies`);
-
     return (
         <ul className="companies">
-            {validCompanies.map((c, index) => {
-                console.log(`🏢 Rendering company ${index + 1}:`, c.symbol, c.name);
-
-                // Additional validation per company
+            {validCompanies.map((c) => {
+                // Skip invalid companies
                 if (!c.symbol || !c.name) {
-                    console.warn('⚠️ Skipping invalid company:', c);
                     return null;
                 }
 
@@ -121,25 +99,13 @@ export default function CompanyList({ companies, selected, onSelect }) {
                         key={c.symbol}
                         className={`item ${selected && selected.symbol === c.symbol ? "active" : ""}`}
                         onClick={() => {
-                            console.log('🎯 Company clicked:', c.symbol, c.name);
-                            console.log('📱 Click event details:', {
-                                symbol: c.symbol,
-                                name: c.name,
-                                timestamp: new Date().toISOString(),
-                                userAgent: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'
-                            });
-
-                            // Ensure onSelect is a function before calling
                             if (typeof onSelect === 'function') {
                                 onSelect(c);
-                            } else {
-                                console.error('❌ onSelect is not a function:', typeof onSelect);
                             }
                         }}
-                        // Add touch-friendly attributes for mobile
                         style={{
                             cursor: 'pointer',
-                            touchAction: 'manipulation' // Prevent zoom on double-tap
+                            touchAction: 'manipulation'
                         }}
                     >
                         <div className="ticker">{c.symbol}</div>
