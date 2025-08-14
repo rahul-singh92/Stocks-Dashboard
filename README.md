@@ -10,16 +10,17 @@ A modern, full-stack stock trading dashboard that provides real-time stock data,
 
 ### Mobile Views
 <div align="center">
-
-![Mobile Dashboard](./images/mobile-closed.jpg) &nbsp;&nbsp;&nbsp;&nbsp; ![Mobile Menu](./images/mobile-menu-open.jpg)
-
+  <img src="./images/mobile-closed.jpg" alt="Mobile Dashboard" width="200" height="400" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./images/mobile-menu-open.jpg" alt="Mobile Menu" width="200" height="400" />
+</div>
 *Left: Mobile dashboard with responsive design | Right: Mobile hamburger menu expanded*
 
 </div>
 
 ## 🚀 Live Demo
 
-- **Frontend**: [https://your-frontend-name.onrender.com](https://your-frontend-name.onrender.com)
+- **Frontend**: [https://stocks-dashboard-y9ka.onrender.com)](https://stocks-dashboard-y9ka.onrender.com)
 - **Backend API**: [https://stocks-api-backend.onrender.com](https://stocks-api-backend.onrender.com)
 
 ## 💡 Development Approach & Challenges
