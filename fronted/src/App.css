@@ -233,6 +233,14 @@ canvas {
   opacity: .6;
 }
 
+/* iOS Safari Safe Area Support */
+@supports (padding: max(0px)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 /* ===== MOBILE RESPONSIVE STYLES ===== */
 
 /* Tablet View */
@@ -257,8 +265,20 @@ canvas {
 
 /* Mobile View */
 @media (max-width: 768px) {
+
+  /* iOS Safari viewport fixes */
+  body {
+    padding: 0;
+    margin: 0;
+    overflow-x: hidden;
+  }
+
   .app {
     grid-template-columns: 1fr;
+    height: 100vh;
+    height: -webkit-fill-available;
+    /* Safari mobile fix */
+    min-height: -webkit-fill-available;
   }
 
   /* Show mobile overlay when sidebar is open */
@@ -276,6 +296,10 @@ canvas {
     transform: translateX(-100%);
     z-index: 1000;
     box-shadow: var(--shadow);
+    height: 100vh;
+    height: -webkit-fill-available;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Show sidebar when open */
@@ -288,8 +312,15 @@ canvas {
     display: flex;
   }
 
+  /* Fix topbar positioning for Safari */
   .topbar {
-    padding: 12px 16px;
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
 
   .title {
@@ -303,23 +334,49 @@ canvas {
     padding: 6px 10px;
   }
 
+  /* Main content area - fix for Safari bars */
+  main {
+    height: 100vh;
+    height: -webkit-fill-available;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Content scrolling fix */
   .content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 12px;
     gap: 12px;
+    padding-bottom: max(40px, env(safe-area-inset-bottom, 20px));
+
+    /* Ensure it doesn't get cut off by Safari bars */
+    max-height: calc(100vh - 70px);
+    max-height: calc(-webkit-fill-available - 70px);
+    min-height: 0;
+    /* Important for flexbox */
   }
 
   .card {
     padding: 12px;
     min-height: 250px;
+    flex-shrink: 0;
+    /* Prevent shrinking */
   }
 
+  /* Stats panel - make it fully scrollable */
   .stats {
     grid-template-columns: 1fr;
     gap: 10px;
+    margin-bottom: 25px;
+    /* Extra space at bottom */
   }
 
   .stat {
     padding: 12px;
+    margin-bottom: 8px;
   }
 
   .stat .value {
@@ -346,6 +403,7 @@ canvas {
   .topbar {
     flex-wrap: wrap;
     gap: 8px;
+    padding-top: max(8px, env(safe-area-inset-top));
   }
 
   .title {
@@ -378,9 +436,13 @@ canvas {
     margin-bottom: 8px;
   }
 
+  /* Enhanced scrolling for small screens */
   .content {
     padding: 8px;
     gap: 8px;
+    padding-bottom: max(50px, env(safe-area-inset-bottom, 30px));
+    max-height: calc(100vh - 90px);
+    max-height: calc(-webkit-fill-available - 90px);
   }
 
   .card {
@@ -390,11 +452,14 @@ canvas {
 
   .stats {
     gap: 8px;
+    margin-bottom: 30px;
+    /* More space for small screens */
   }
 
   .stat {
     padding: 10px;
     border-radius: 10px;
+    margin-bottom: 10px;
   }
 
   .stat .label {
@@ -417,10 +482,26 @@ canvas {
   .content {
     grid-template-rows: 1fr;
     grid-template-columns: 1fr 300px;
+    max-height: calc(100vh - 60px);
+    max-height: calc(-webkit-fill-available - 60px);
   }
 
   .stats {
     grid-template-columns: 1fr;
+    margin-bottom: 20px;
+  }
+}
+
+/* Specific fix for very small screens and short viewports */
+@media (max-width: 480px) and (max-height: 700px) {
+  .content {
+    padding-bottom: max(60px, env(safe-area-inset-bottom, 40px));
+    max-height: calc(100vh - 100px);
+    max-height: calc(-webkit-fill-available - 100px);
+  }
+
+  .stats {
+    margin-bottom: 40px;
   }
 }
 
@@ -477,10 +558,13 @@ canvas {
   outline-offset: 1px;
 }
 
-/* Ensure proper scrolling on mobile */
+/* Enhanced mobile scrolling fixes */
 @media (max-width: 768px) {
+
+  /* Remove body overflow hidden to allow proper scrolling */
   body {
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   aside {
@@ -492,7 +576,10 @@ canvas {
     overflow: hidden;
   }
 
+  /* Ensure smooth scrolling on iOS */
   .content {
-    overflow: hidden;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 }
