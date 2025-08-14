@@ -17,7 +17,11 @@ app = FastAPI(title="Stocks API")
 # Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For dev only, restrict in prod
+    allow_origins=[
+        "https://your-frontend-name.onrender.com",  # Your actual frontend URL
+        "http://localhost:3000",
+        "*"  # Temporarily add this for testing
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
