@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { API_BASE } from "./config";
 import CompanyList from "./components/CompanyList"
 import StockChart from "./components/StockChart"
@@ -11,19 +11,20 @@ function App() {
   const [prices, setPrices] = useState([]);
   const [stats, setStats] = useState({});
   const [prediction, setPrediction] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Add mobile sidebar toggle
 
   useEffect(() => {
     fetch(`${API_BASE}/companies`)
-    .then(res => res.json())
-    .then(data => {
-      setCompanies(data);
-      if (data.length) selectCompany(data[0]);
-    });
-  },[]
-  );
+      .then(res => res.json())
+      .then(data => {
+        setCompanies(data);
+        if (data.length) selectCompany(data[0]);
+      });
+  }, []);
 
   const selectCompany = (company) => {
     setSelected(company);
+    setSidebarOpen(false); // Close sidebar after selection on mobile
     Promise.all([
       fetch(`${API_BASE}/prices/${company.symbol}?period=1y&interval=1d`).then(r => r.json()),
       fetch(`${API_BASE}/stats/${company.symbol}`).then(r => r.json()),
@@ -37,14 +38,30 @@ function App() {
 
   return (
     <div className="app">
-      <aside>
+      {/* Mobile overlay when sidebar is open */}
+      {sidebarOpen && <div className="overlay" onClick={() => setSidebarOpen(false)}></div>}
+
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="brand">📈 Stocks</div>
         <CompanyList companies={companies} selected={selected} onSelect={selectCompany} />
       </aside>
+
       <main>
         <div className="topbar">
-          <div className="title">{selected ? `${selected.name} • ${selected.symbol}` : "Select a company"}</div>
-          <div className="pill">{prediction ? `Next-day: ₹${prediction.predicted_close}` : "—"}</div>
+          {/* Mobile hamburger menu */}
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            ☰
+          </button>
+
+          <div className="title">
+            {selected ? `${selected.name} • ${selected.symbol}` : "Select a company"}
+          </div>
+          <div className="pill">
+            {prediction ? `Next-day: ₹${prediction.predicted_close}` : "—"}
+          </div>
         </div>
         <div className="content">
           <StockChart prices={prices} />
@@ -53,7 +70,6 @@ function App() {
       </main>
     </div>
   );
-
 }
 
 export default App;

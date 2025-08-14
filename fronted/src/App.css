@@ -33,6 +33,20 @@ body {
   display: grid;
   grid-template-columns: 280px 1fr;
   width: 100%;
+  position: relative;
+}
+
+/* Mobile overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999;
+  display: none;
+  backdrop-filter: blur(2px);
 }
 
 aside {
@@ -41,6 +55,9 @@ aside {
   height: 100vh;
   overflow: auto;
   padding: 16px 12px;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1000;
 }
 
 .brand {
@@ -48,6 +65,7 @@ aside {
   letter-spacing: .4px;
   margin-bottom: 12px;
   color: #fff;
+  padding: 8px 0;
 }
 
 ul.companies {
@@ -69,6 +87,8 @@ ul.companies {
   border-radius: 12px;
   cursor: pointer;
   transition: transform .05s ease;
+  min-height: 44px;
+  /* Better touch targets */
 }
 
 .item:hover {
@@ -105,12 +125,40 @@ main {
   position: sticky;
   top: 0;
   z-index: 3;
+  gap: 12px;
+}
+
+/* Mobile menu button */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 20px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu-btn:active {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .title {
   font-size: 1.1rem;
   font-weight: 600;
   color: #fff;
+  flex: 1;
+  text-align: center;
 }
 
 .pill {
@@ -119,6 +167,7 @@ main {
   border-radius: 999px;
   padding: 8px 12px;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .content {
@@ -127,6 +176,7 @@ main {
   gap: 14px;
   padding: 14px;
   height: 100%;
+  overflow: hidden;
 }
 
 .card {
@@ -183,12 +233,266 @@ canvas {
   opacity: .6;
 }
 
-@media (max-width: 900px) {
+/* ===== MOBILE RESPONSIVE STYLES ===== */
+
+/* Tablet View */
+@media (max-width: 1024px) {
+  .app {
+    grid-template-columns: 250px 1fr;
+  }
+
+  aside {
+    padding: 12px 8px;
+  }
+
+  .content {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .stats {
+    gap: 12px;
+  }
+}
+
+/* Mobile View */
+@media (max-width: 768px) {
   .app {
     grid-template-columns: 1fr;
   }
 
+  /* Show mobile overlay when sidebar is open */
+  .overlay.show {
+    display: block;
+  }
+
+  /* Hide sidebar by default on mobile */
   aside {
-    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    max-width: 80vw;
+    transform: translateX(-100%);
+    z-index: 1000;
+    box-shadow: var(--shadow);
+  }
+
+  /* Show sidebar when open */
+  aside.open {
+    transform: translateX(0);
+  }
+
+  /* Show mobile menu button */
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .topbar {
+    padding: 12px 16px;
+  }
+
+  .title {
+    font-size: 1rem;
+    text-align: left;
+    margin-left: 8px;
+  }
+
+  .pill {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
+  .content {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .card {
+    padding: 12px;
+    min-height: 250px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stat {
+    padding: 12px;
+  }
+
+  .stat .value {
+    font-size: 1.1rem;
+  }
+
+  /* Better touch targets for mobile */
+  .item {
+    padding: 14px 12px;
+    min-height: 48px;
+  }
+
+  .ticker {
+    font-size: 1rem;
+  }
+
+  .name {
+    font-size: 0.85rem;
+  }
+}
+
+/* Small Mobile View */
+@media (max-width: 480px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .title {
+    order: 2;
+    flex: 1;
+    text-align: center;
+    width: 100%;
+    margin: 0;
+    margin-top: 4px;
+  }
+
+  .pill {
+    order: 3;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+
+  .mobile-menu-btn {
+    order: 1;
+    font-size: 18px;
+  }
+
+  aside {
+    width: 260px;
+    max-width: 85vw;
+  }
+
+  .brand {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+
+  .content {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .card {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .stats {
+    gap: 8px;
+  }
+
+  .stat {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .stat .label {
+    font-size: 0.8rem;
+  }
+
+  .stat .value {
+    font-size: 1rem;
+  }
+
+  /* Extra large touch targets for small screens */
+  .item {
+    padding: 16px 12px;
+    min-height: 52px;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+  .content {
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr 300px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+  .item {
+    border-width: 0.5px;
+  }
+
+  .stat {
+    border-width: 0.5px;
+  }
+
+  .card {
+    border-width: 0.5px;
+  }
+}
+
+/* Dark mode improvements for mobile */
+@media (prefers-color-scheme: dark) {
+  .mobile-menu-btn {
+    color: var(--text);
+  }
+
+  .overlay {
+    background: rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  aside {
+    transition: none;
+  }
+
+  .item {
+    transition: none;
+  }
+
+  .mobile-menu-btn {
+    transition: none;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.mobile-menu-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.item:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Ensure proper scrolling on mobile */
+@media (max-width: 768px) {
+  body {
+    overflow: hidden;
+  }
+
+  aside {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  main {
+    overflow: hidden;
+  }
+
+  .content {
+    overflow: hidden;
   }
 }
