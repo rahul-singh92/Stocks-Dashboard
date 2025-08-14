@@ -18,9 +18,10 @@ app = FastAPI(title="Stocks API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://your-frontend-name.onrender.com",  # Your actual frontend URL
+        "https://stocks-dashboard-frontend.onrender.com",  # Replace with your ACTUAL frontend URL
+        "https://your-actual-frontend-name.onrender.com",  # Add your real URL here
         "http://localhost:3000",
-        "*"  # Temporarily add this for testing
+        "*"  # Keep this for now, remove later for security
     ],
     allow_credentials=True,
     allow_methods=["*"],
