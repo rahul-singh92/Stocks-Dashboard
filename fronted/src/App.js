@@ -3,6 +3,7 @@ import { API_BASE } from "./config";
 import CompanyList from "./components/CompanyList"
 import StockChart from "./components/StockChart"
 import StatsPanel from "./components/StatsPanel"
+import TechnicalPanel from "./components/TechnicalPanel"
 import './App.css';
 
 function App() {
@@ -12,6 +13,15 @@ function App() {
   const [stats, setStats] = useState({});
   const [prediction, setPrediction] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [chartType, setChartType] = useState('line');
+  const [technicalIndicators, setTechnicalIndicators] = useState({});
+
+  const chartTypes = [
+    { value: 'line', label: '📈 Line Chart', icon: '📈' },
+    { value: 'bar', label: '📊 Bar Chart', icon: '📊' },
+    { value: 'area', label: '🏔️ Area Chart', icon: '🏔️' },
+    { value: 'candlestick', label: '🕯️ Candlestick', icon: '🕯️' }
+  ];
 
   useEffect(() => {
     fetch(`${API_BASE}/companies`)
@@ -44,9 +54,20 @@ function App() {
     });
   };
 
+  const handleIndicatorChange = (indicatorData) => {
+    if (indicatorData.clearAll) {
+      setTechnicalIndicators({});
+      return;
+    }
+
+    setTechnicalIndicators(prev => ({
+      ...prev,
+      [indicatorData.key]: indicatorData.enabled
+    }));
+  };
+
   return (
     <div className="app">
-      {/* Mobile overlay when sidebar is open */}
       {sidebarOpen && (
         <div
           className="overlay"
@@ -61,7 +82,6 @@ function App() {
 
       <main>
         <div className="topbar">
-          {/* Mobile hamburger menu */}
           <button
             className="mobile-menu-btn"
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -72,12 +92,39 @@ function App() {
           <div className="title">
             {selected ? `${selected.name} • ${selected.symbol}` : "Select a company"}
           </div>
+
+          <div className="chart-selector">
+            <select 
+              value={chartType} 
+              onChange={(e) => setChartType(e.target.value)}
+              className="chart-dropdown"
+            >
+              {chartTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="pill">
             {prediction ? `Next-day: ₹${prediction.predicted_close}` : "—"}
           </div>
         </div>
+        
+        <div className="technical-controls">
+          <TechnicalPanel 
+            onIndicatorChange={handleIndicatorChange}
+            selectedIndicators={technicalIndicators}
+          />
+        </div>
+        
         <div className="content">
-          <StockChart prices={prices} />
+          <StockChart 
+            prices={prices} 
+            chartType={chartType}
+            technicalIndicators={technicalIndicators}
+          />
           <StatsPanel stats={stats} />
         </div>
       </main>
