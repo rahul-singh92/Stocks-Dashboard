@@ -82,7 +82,7 @@ export default function StockChart({ prices, chartType = 'line', technicalIndica
         );
     }
 
-    const { labels, closes, indicators } = chartData;
+    const { labels, closes, opens, highs, lows, volumes, indicators } = chartData;
 
     // Calculate overall performance
     const firstPrice = closes[0];
@@ -118,187 +118,251 @@ export default function StockChart({ prices, chartType = 'line', technicalIndica
         return gradient;
     };
 
-    // Build datasets
-    const datasets = [];
-    const pointColors = createPointColors();
+    // Generate chart data based on chart type
+    const getChartData = () => {
+        const datasets = [];
+        const pointColors = createPointColors();
 
-    // Main price dataset
-    const mainDataset = {
-        label: `${prices[0]?.symbol || 'Stock'} Price ${isPositive ? '📈' : '📉'}`,
-        data: closes,
-        borderWidth: 3,
-        tension: 0.4,
-        pointRadius: 1,
-        pointBackgroundColor: pointColors,
-        pointBorderColor: pointColors,
-        pointHoverRadius: 6,
-        pointHoverBorderWidth: 2,
-        pointHoverBorderColor: '#ffffff',
-        borderColor: function (context) {
-            const chart = context.chart;
-            const { ctx, chartArea } = chart;
-            if (!chartArea) return null;
-            return createGradient(ctx, chartArea, isPositive);
-        },
-        backgroundColor: chartType === 'area' ? function (context) {
-            const chart = context.chart;
-            const { ctx, chartArea } = chart;
-            if (!chartArea) return null;
-            return createGradient(ctx, chartArea, isPositive);
-        } : 'rgba(34, 197, 94, 0.05)',
-        fill: chartType === 'area',
-        yAxisID: 'y'
-    };
-
-    datasets.push(mainDataset);
-
-    // Add technical indicator datasets
-    const indicatorColors = [
-        '#3b82f6', // Blue
-        '#f59e0b', // Amber
-        '#8b5cf6', // Violet
-        '#ef4444', // Red
-        '#06b6d4', // Cyan
-        '#84cc16', // Lime
-        '#ec4899', // Pink
-        '#6366f1'  // Indigo
-    ];
-
-    let colorIndex = 0;
-
-    Object.entries(indicators).forEach(([key, data]) => {
-        const [indicatorType, period] = key.split('_');
-        const color = indicatorColors[colorIndex % indicatorColors.length];
-        
-        switch (indicatorType) {
-            case 'sma':
-            case 'ema':
+        // Main price dataset - different for each chart type
+        switch (chartType) {
+            case 'bar':
                 datasets.push({
-                    label: `${indicatorType.toUpperCase()} (${period})`,
-                    data: data,
-                    borderColor: color,
-                    backgroundColor: color + '20',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
-                    tension: 0.1,
-                    fill: false,
-                    yAxisID: 'y'
-                });
-                colorIndex++;
-                break;
-
-            case 'bollinger':
-                // Upper band
-                datasets.push({
-                    label: 'Bollinger Upper',
-                    data: data.upper,
-                    borderColor: indicatorColors[colorIndex % indicatorColors.length],
-                    backgroundColor: 'transparent',
+                    label: `${prices[0]?.symbol || 'Stock'} Price ${isPositive ? '📈' : '📉'}`,
+                    data: closes,
+                    backgroundColor: pointColors.map(color => color + '80'),
+                    borderColor: pointColors,
                     borderWidth: 1,
-                    borderDash: [5, 5],
-                    pointRadius: 0,
-                    fill: false,
+                    borderRadius: 4,
+                    borderSkipped: false,
                     yAxisID: 'y'
                 });
+                break;
                 
-                // Middle band (SMA)
+            case 'candlestick':
+                // Simplified candlestick representation using bars
+                const candlestickData = closes.map((close, i) => ({
+                    x: i,
+                    y: close,
+                    open: opens[i],
+                    high: highs[i],
+                    low: lows[i]
+                }));
+                
                 datasets.push({
-                    label: 'Bollinger Middle',
-                    data: data.middle,
-                    borderColor: indicatorColors[(colorIndex + 1) % indicatorColors.length],
-                    backgroundColor: 'transparent',
+                    label: 'High-Low Range',
+                    data: highs.map((high, i) => high - lows[i]),
+                    backgroundColor: pointColors.map(color => color + '40'),
+                    borderColor: pointColors,
                     borderWidth: 1,
-                    pointRadius: 0,
-                    fill: false,
                     yAxisID: 'y'
                 });
                 
-                // Lower band
                 datasets.push({
-                    label: 'Bollinger Lower',
-                    data: data.lower,
-                    borderColor: indicatorColors[colorIndex % indicatorColors.length],
-                    backgroundColor: indicatorColors[colorIndex % indicatorColors.length] + '10',
-                    borderWidth: 1,
-                    borderDash: [5, 5],
-                    pointRadius: 0,
-                    fill: '+1',
+                    label: `${prices[0]?.symbol || 'Stock'} Close ${isPositive ? '📈' : '📉'}`,
+                    data: closes,
+                    type: 'line',
+                    borderColor: isPositive ? '#22c55e' : '#ef4444',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointBackgroundColor: pointColors,
                     yAxisID: 'y'
                 });
-                colorIndex += 2;
                 break;
-
-            case 'rsi':
-                datasets.push({
-                    label: 'RSI (14)',
-                    data: data,
-                    borderColor: color,
-                    backgroundColor: color + '20',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
-                    tension: 0.1,
-                    fill: false,
-                    yAxisID: 'y1'
-                });
-                colorIndex++;
-                break;
-
-            case 'macd':
-                datasets.push({
-                    label: 'MACD Line',
-                    data: data.macd,
-                    borderColor: color,
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: false,
-                    yAxisID: 'y1'
-                });
                 
+            case 'area':
                 datasets.push({
-                    label: 'Signal Line',
-                    data: data.signal,
-                    borderColor: indicatorColors[(colorIndex + 1) % indicatorColors.length],
-                    backgroundColor: 'transparent',
+                    label: `${prices[0]?.symbol || 'Stock'} Price ${isPositive ? '📈' : '📉'}`,
+                    data: closes,
                     borderWidth: 2,
+                    tension: 0.4,
                     pointRadius: 0,
-                    fill: false,
-                    yAxisID: 'y1'
+                    pointHoverRadius: 6,
+                    borderColor: isPositive ? '#22c55e' : '#ef4444',
+                    backgroundColor: function (context) {
+                        const chart = context.chart;
+                        const { ctx, chartArea } = chart;
+                        if (!chartArea) return null;
+                        return createGradient(ctx, chartArea, isPositive);
+                    },
+                    fill: true,
+                    yAxisID: 'y'
                 });
-                colorIndex += 2;
                 break;
-
-            case 'stochastic':
-                datasets.push({
-                    label: '%K',
-                    data: data.k,
-                    borderColor: color,
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: false,
-                    yAxisID: 'y1'
-                });
                 
+            default: // 'line'
                 datasets.push({
-                    label: '%D',
-                    data: data.d,
-                    borderColor: indicatorColors[(colorIndex + 1) % indicatorColors.length],
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    pointRadius: 0,
+                    label: `${prices[0]?.symbol || 'Stock'} Price ${isPositive ? '📈' : '📉'}`,
+                    data: closes,
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 1,
+                    pointBackgroundColor: pointColors,
+                    pointBorderColor: pointColors,
+                    pointHoverRadius: 6,
+                    pointHoverBorderWidth: 2,
+                    pointHoverBorderColor: '#ffffff',
+                    borderColor: function (context) {
+                        const chart = context.chart;
+                        const { ctx, chartArea } = chart;
+                        if (!chartArea) return null;
+                        return createGradient(ctx, chartArea, isPositive);
+                    },
+                    backgroundColor: 'rgba(34, 197, 94, 0.05)',
                     fill: false,
-                    yAxisID: 'y1'
+                    yAxisID: 'y'
                 });
-                colorIndex += 2;
-                break;
-
-            default:
-                break;
         }
-    });
+
+        // Add technical indicators (same for all chart types)
+        const indicatorColors = [
+            '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', 
+            '#06b6d4', '#84cc16', '#ec4899', '#6366f1'
+        ];
+
+        let colorIndex = 0;
+
+        Object.entries(indicators).forEach(([key, data]) => {
+            const [indicatorType, period] = key.split('_');
+            const color = indicatorColors[colorIndex % indicatorColors.length];
+            
+            switch (indicatorType) {
+                case 'sma':
+                case 'ema':
+                    datasets.push({
+                        label: `${indicatorType.toUpperCase()} (${period})`,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        tension: 0.1,
+                        fill: false,
+                        yAxisID: 'y',
+                        type: 'line' // Force line type for indicators
+                    });
+                    colorIndex++;
+                    break;
+
+                case 'bollinger':
+                    datasets.push(
+                        {
+                            label: 'Bollinger Upper',
+                            data: data.upper,
+                            borderColor: color,
+                            backgroundColor: 'transparent',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            yAxisID: 'y',
+                            type: 'line'
+                        },
+                        {
+                            label: 'Bollinger Middle',
+                            data: data.middle,
+                            borderColor: indicatorColors[(colorIndex + 1) % indicatorColors.length],
+                            backgroundColor: 'transparent',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            fill: false,
+                            yAxisID: 'y',
+                            type: 'line'
+                        },
+                        {
+                            label: 'Bollinger Lower',
+                            data: data.lower,
+                            borderColor: color,
+                            backgroundColor: color + '10',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: '+2', // Fill between upper and lower
+                            yAxisID: 'y',
+                            type: 'line'
+                        }
+                    );
+                    colorIndex += 2;
+                    break;
+
+                case 'rsi':
+                    datasets.push({
+                        label: 'RSI (14)',
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        tension: 0.1,
+                        fill: false,
+                        yAxisID: 'y1',
+                        type: 'line'
+                    });
+                    colorIndex++;
+                    break;
+
+                case 'macd':
+                    datasets.push(
+                        {
+                            label: 'MACD Line',
+                            data: data.macd,
+                            borderColor: color,
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            yAxisID: 'y1',
+                            type: 'line'
+                        },
+                        {
+                            label: 'Signal Line',
+                            data: data.signal,
+                            borderColor: indicatorColors[(colorIndex + 1) % indicatorColors.length],
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            yAxisID: 'y1',
+                            type: 'line'
+                        }
+                    );
+                    colorIndex += 2;
+                    break;
+
+                case 'stochastic':
+                    datasets.push(
+                        {
+                            label: '%K',
+                            data: data.k,
+                            borderColor: color,
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            yAxisID: 'y1',
+                            type: 'line'
+                        },
+                        {
+                            label: '%D',
+                            data: data.d,
+                            borderColor: indicatorColors[(colorIndex + 1) % indicatorColors.length],
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            yAxisID: 'y1',
+                            type: 'line'
+                        }
+                    );
+                    colorIndex += 2;
+                    break;
+            }
+        });
+
+        return { labels, datasets };
+    };
 
     // Chart configuration
     const hasSecondaryIndicators = Object.keys(indicators).some(key => 
@@ -366,7 +430,6 @@ export default function StockChart({ prices, chartType = 'line', technicalIndica
                     usePointStyle: true,
                     pointStyle: 'line',
                     filter: function(item, chart) {
-                        // Don't show hidden datasets in legend
                         return !item.text.includes('Hidden');
                     }
                 }
@@ -387,9 +450,9 @@ export default function StockChart({ prices, chartType = 'line', technicalIndica
                     },
                     label: function (context) {
                         const { datasetIndex, parsed } = context;
-                        const dataset = datasets[datasetIndex];
+                        const dataset = context.chart.data.datasets[datasetIndex];
                         
-                        if (dataset.label.includes('Price')) {
+                        if (dataset.label.includes('Price') || dataset.label.includes('Close')) {
                             const price = parsed.y;
                             const dataIndex = context.dataIndex;
                             const previousPrice = dataIndex > 0 ? closes[dataIndex - 1] : price;
@@ -412,7 +475,18 @@ export default function StockChart({ prices, chartType = 'line', technicalIndica
         }
     };
 
-    const data = { labels, datasets };
+    // Render appropriate chart based on type
+    const renderChart = () => {
+        const data = getChartData();
+        
+        switch (chartType) {
+            case 'bar':
+            case 'candlestick':
+                return <Bar data={data} options={options} />;
+            default:
+                return <Line data={data} options={options} />;
+        }
+    };
 
     return (
         <div className="card" style={{
@@ -423,7 +497,7 @@ export default function StockChart({ prices, chartType = 'line', technicalIndica
             padding: '10px',
             boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
         }}>
-            <Line data={data} options={options} />
+            {renderChart()}
         </div>
     );
 }
